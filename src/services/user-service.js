@@ -1,6 +1,6 @@
 import userModel from "../models/user-model.js"
 import bcrypt from 'bcrypt'
-import uuid from 'uuid'
+import { v4 as uuidv4 } from 'uuid'
 import MailService from "./mail-service.js"
 import tokenService from "./token-service.js"
 import UserDto from "../dtos/user-dto.js"
@@ -9,13 +9,11 @@ const mailService = new MailService()
 class UserService{
     async registration(email, password){
         const condidat = await userModel.findOne({email})
-   
-
         if(condidat){
             throw new Error("такой пользователь уже сущ")
         }
         const hashPassword = bcrypt.hashSync(password, 3)
-        const activationLink = uuid.v4() ///domen/5000/auth/activate/v32-vfdsvsdf-vdfvfssfdjk
+        const activationLink = uuidv4() ///domen/5000/auth/activate/v32-vfdsvsdf-vdfvfssfdjk
         const user = await userModel.create({email, password:hashPassword, activationLink})
         await mailService.sendActivationMail(email, `${process.env.API_URL}/auth/activate/${activationLink}`)
 
@@ -64,7 +62,7 @@ class UserService{
         user.otpCode = OTP_CODE
         await user.save()
 
-        await mailService.sendActivationMail(email,OTP_CODE)
+        await mailService.sendOtpCode(email,OTP_CODE)
         return {...tokens, user:userDto}
     }
    

@@ -4,7 +4,7 @@ class MailService{
     constructor(){
         this.transporter = nodemailer.createTransport({
             host:process.env.SMTP_HOST,
-            port:process.env.SMTP_PORT,
+            port:Number(process.env.SMTP_PORT),
             secure:false,
             auth:{
                 user:process.env.SMTP_USER,
@@ -12,19 +12,24 @@ class MailService{
             }
         })
     }
-    async sendActivationMail(to, link){
-        await this.transporter.sendMail({
-            from:process.env.SMTP_USER,
-            to,
-            subject:"Активация аккаунта на "+ process.env.API_URL,
-            text:"",
-            html:`
-            <div>
-                <h1>для активации переите оп ссылке</h1>
-                <a href=${link}>${link}</a>
-            </div>
-            `
-        })
+    async sendActivationMail(to, link) {
+        try {
+            await this.transporter.sendMail({
+                from: process.env.SMTP_USER,
+                to,
+                subject: "Активация аккаунта на " + process.env.API_URL,
+                text: "",
+                html: `
+                <div>
+                    <h1>Для активации перейдите по ссылке</h1>
+                    <a href=${link}>${link}</a>
+                </div>
+                `,
+            })
+        } catch (e) {
+            console.error("Error sending activation email:", e.message)
+            throw new Error("Failed to send activation email")
+        }
     }
     async sendOtpCode(to, code){
         await this.transporter.sendMail({

@@ -12,10 +12,10 @@ export default function authMiddleware(req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.SECRET_KEY)
+    const decoded = jwt.verify(token, process.env.SECRET_ACCESS_KEY)
     req.user = decoded 
     next()
   } catch (e) {
-    return res.status(400).json({ message: 'Invalid token' })
+    return res.json({ message: 'Invalid token' })
   }
 }

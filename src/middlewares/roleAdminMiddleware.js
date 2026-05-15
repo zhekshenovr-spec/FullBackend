@@ -2,18 +2,18 @@ import userModel from "../models/user-model.js";
 
 export default async function roleAdminMiddleware(req, res, next) {
     try {
-        const userId = req.user?.id
+        const userId = req.user?.id;
         if (!userId) {
-            return res.json({ message: "Доступ запрещен" })
+            return res.status(403).json({ message: "Access denied" });
         }
 
         const user = await userModel.findById(userId)
         if (!user || user.role !== "ADMIN") {
-            return res.json({ message: "Недостаточно прав" })
+            return res.status(403).json({ message: "Insufficient permissions" })
         }
 
         next()
     } catch (e) {
-        return res.json({ message: "Ошибка" })
+        return res.status(500).json({ message: "Server error" })
     }
 }

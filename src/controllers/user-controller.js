@@ -36,6 +36,9 @@ class UserController{
     async refresh(req,res){
         try{
             const { refreshtoken } = req.cookies
+            if (!refreshtoken) {
+                return res.status(401).json({ message: "Refresh token is missing" });
+            }
             const userData = await userService.refresh(refreshtoken)
             res.cookie("refreshtoken", userData.refreshToken, {maxAge:30*24*60*60*1000})
             return res.json(userData)
@@ -56,7 +59,7 @@ class UserController{
         try{
             const activationLink = req.params.link
             await userService.activate(activationLink)
-            return res.redict(process.env.CLIENT_API)
+            return res.redirect(process.env.CLIENT_API)
         }catch(e){
             throw new Error(e.message)
         }
@@ -71,17 +74,21 @@ class UserController{
             throw new Error(e.message)
         }
     }
-    async createRoles(req, res){
-        try{
+    async createRoles(req, res) {
+        try {
+            const existingRoles = await roleModel.find()
+            if (existingRoles.length > 0) {
+                return res.json({ message: "Roles already exist" })
+            }
+    
             const user = new roleModel()
-            const admin = new roleModel({value: "ADMIN"})
+            const admin = new roleModel({ value: "ADMIN" })
             await user.save()
             await admin.save()
-            res.json({message: "roles created successfully"})
-        }
-        catch(e){
+            res.json({ message: "Roles created successfully" })
+        } catch (e) {
             console.log(e)
-            res.status(400).json({message: "error in create roles"})
+            res.status(400).json({ message: "Error in creating roles" })
         }
     }
 }
