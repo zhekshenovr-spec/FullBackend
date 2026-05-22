@@ -10,7 +10,7 @@ class UserService{
     async registration(email, password){
         const condidat = await userModel.findOne({email})
         if(condidat){
-            throw new Error("такой пользователь уже сущ")
+            throw new Error("This user already exists")
         }
         const hashPassword = bcrypt.hashSync(password, 3)
         const activationLink = uuidv4() ///domen/5000/auth/activate/v32-vfdsvsdf-vdfvfssfdjk
@@ -26,44 +26,42 @@ class UserService{
     async activate(activationLink){
         const user = await userModel.findOne({activationLink})
         if(!user){
-           throw new Error("некоректная ссылка")
+           throw new Error("Some kind of link")
         }
-        user.isActicated = true
+        user.isActivated = true
         await user.save()
    }
    
-   async checkOTP(OTP_CODE, email){
-    const user = await userModel.findOne({ email })
-    if(user.otpCode == OTP_CODE){
-        user.otpCode = null
-        await user.save()
-            const userDto = new UserDto(user)
-            const tokens = tokenService.generateToken({...userDto})
-            await tokenService.saveToken(userDto.id, tokens.refreshToken)
-            return {...tokens, user:userDto}
-        }
-        throw new Error("Неправильный код")
-    }
-
-   async login(email, password){
+    async checkOTP(OTP_CODE, email) {
         const user = await userModel.findOne({ email })
         if (!user) {
-            throw new Error("Пользователя не существует")
+            throw new Error("User not found")
+        }
+        if (user.otpCode === OTP_CODE) {
+            user.otpCode = null
+            await user.save()
+            const userDto = new UserDto(user)
+            const tokens = tokenService.generateToken({ ...userDto })
+            await tokenService.saveToken(userDto.id, tokens.refreshToken)   
+            return { ...tokens, user: userDto }
+        }   
+        throw new Error("Wrong code")
+    }
+
+    async login(email, password) {
+        const user = await userModel.findOne({ email })
+        if (!user) {
+            throw new Error("User not found")
         }
         const isPasswordValid = await bcrypt.compare(password, user.password)
         if (!isPasswordValid) {
-            throw new Error("Неправильный пароль")
+            throw new Error("Wrong code")
         }
-        const userDto = new UserDto(user)
-        const tokens = tokenService.generateToken({...userDto})
-        await tokenService.saveToken(userDto.id, tokens.refreshToken)
-
         const OTP_CODE = Math.floor(100000 + Math.random() * 900000).toString()
         user.otpCode = OTP_CODE
         await user.save()
-
-        await mailService.sendOtpCode(email,OTP_CODE)
-        return {...tokens, user:userDto}
+        await mailService.sendOtpCode(email, OTP_CODE)
+        return { message: "OTP code sent to email", email } 
     }
    
 
@@ -76,12 +74,12 @@ class UserService{
     }
     async refresh(refreshToken) {
         if (!refreshToken) {
-            throw new Error("Пользователь не авторизован")
+            throw new Error("Wrong code")
         }
         const userData = tokenService.validateRefreshToken(refreshToken)
         const tokenFromDb = await tokenService.findToken(refreshToken)
         if (!userData || !tokenFromDb) {
-            throw new Error("Пользователь не авторизован")
+            throw new Error("Wrong code")
         }
         const user = await userModel.findById(userData.id)
         const userDto = new UserDto(user)

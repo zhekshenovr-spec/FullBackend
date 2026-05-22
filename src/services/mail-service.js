@@ -17,11 +17,11 @@ class MailService{
             await this.transporter.sendMail({
                 from: process.env.SMTP_USER,
                 to,
-                subject: "Активация аккаунта на " + process.env.API_URL,
+                subject: "Account activation on " + process.env.API_URL,
                 text: "",
                 html: `
                 <div>
-                    <h1>Для активации перейдите по ссылке</h1>
+                    <h1>To activate, follow the link</h1>
                     <a href=${link}>${link}</a>
                 </div>
                 `,
@@ -35,11 +35,11 @@ class MailService{
         await this.transporter.sendMail({
             from:process.env.SMTP_USER,
             to,
-            subject:"Ваш код для авторизации "+ process.env.API_URL,
+            subject:"Your authorization code "+ process.env.API_URL,
             text:"",
             html:`
             <div>
-                <h1>Ваш код</h1>
+                <h1>Your code</h1>
                 <p>${code}</p>
             </div>
             `
