@@ -22,18 +22,14 @@ app.use(cookieParser());
 app.use("/post", router)   
 app.use("/auth", authrouter)
 
-const start = async () => {
+async function start() {
     try {
         await mongoose.connect(process.env.URL_DB);
-        console.log("✅ MongoDB подключена успешно");
-
-        app.listen(PORT, () => {
-            console.log(`🚀 Сервер запущен: http://localhost:${PORT}`);
-        });
-    } catch (error) {
-        console.error("❌ Ошибка запуска сервера:", error.message);
-        process.exit(1); 
+        console.log("MongoDB is work");
+    } catch (e) {
+        console.log("CRUD with static is work");
     }
-};
+    app.listen(PORT, () => console.log(`Server work on http://localhost:${PORT}`));
+}
 
 start();
